@@ -1,44 +1,72 @@
 # Language setting
 language: node_js
 
+env:
+  global:
+    - REPO=sample-node-eb-docker
+    - DOCKER_HUB_URL=orcunkulaksiz # {account name}
+    #- AMAZON_ECR_URL=288971733297.dkr.ecr.us-east-1.amazonaws.com # {AWS account ID}.dkr.ecr.us-east-1
+    #- QUAY_URL="quay.io/ttrahan" # quay.io/{account name}
+
 build:
   ci:
     - echo 'CI is running'
   post_ci:
-      # Pushing to 2 different registries
-      # DockerHub
-      - docker build -t="harryi3t/sample_node_eb_docker:$BRANCH.$BUILD_NUMBER" .
-      - docker push harryi3t/sample_node_eb_docker:$BRANCH.$BUILD_NUMBER
+      - docker build -t="orcunkulaksiz/$REPO:$BRANCH.$BUILD_NUMBER" .
+
+      # Pushing to different registries
+
       # ECR
-      - docker tag harryi3t/sample_node_eb_docker:$BRANCH.$BUILD_NUMBER 480971114143.dkr.ecr.us-east-1.amazonaws.com/sample_node_eb_docker:$BRANCH.$BUILD_NUMBER
-      - docker push 480971114143.dkr.ecr.us-east-1.amazonaws.com/sample_node_eb_docker:$BRANCH.$BUILD_NUMBER
+      #- docker tag shadysql/$REPO:$BRANCH.$BUILD_NUMBER $AMAZON_ECR_URL/$REPO:$BRANCH.$BUILD_NUMBER
+      #- docker push $AMAZON_ECR_URL/$REPO:$BRANCH.$BUILD_NUMBER
+
+      # # DockerHub
+      - docker push $DOCKER_HUB_URL/$REPO:$BRANCH.$BUILD_NUMBER
+
+      # # Quay.io
+      # - docker tag ttrahan/$REPO:$BRANCH.$BUILD_NUMBER $QUAY_URL/$REPO:$BRANCH.$BUILD_NUMBER
+      # - docker push $QUAY_URL/$REPO:$BRANCH.$BUILD_NUMBER
+
 
 integrations:
   deploy:
-    # Public Image (docker)
-    - integrationName: "aws-test"
-      type: aws
-      target: eb_docker
-      application_name: "shippable-orcun"
-      env_name: "shippableorcun"
-      bucket_name: "elasticbeanstalk-eu-central-1-995079897031"
-      region: "us-central-1"
-      image_name: "harryi3t/sample_node_eb_docker"
-      image_tag: "$BRANCH.$BUILD_NUMBER"
+    # Amazon ECR
+  #  - integrationName: "AWS DEV"
+  #    type: aws
+  #    target: eb_docker
+  #    application_name: "shippable-demo-eb"
+  #    env_name: "shippable-demo-eb"
+  #    bucket_name: "elasticbeanstalk-eu-west-1-972257354190"
+  #    region: "eu-west-1"
+  #    image_name: "$AMAZON_ECR_URL/$REPO"
+  #    image_tag: "$BRANCH.$BUILD_NUMBER"
 
-    # Private Image (ECR)
-    - integrationName: "aws-test"
-      type: aws
-      target: eb_docker
-      application_name: "sample-node-eb-docker-app"
-      env_name: "ecr-env"
-      bucket_name: "elasticbeanstalk-eu-central-1-995079897031"
-      region: "us-central-1"
-      image_name: "480971114143.dkr.ecr.us-east-1.amazonaws.com/sample_node_eb_docker"
-      image_tag: "$BRANCH.$BUILD_NUMBER"
+    # # Docker Hub
+     - integrationName: "AWS DEV"
+       type: aws
+       target: eb_docker
+       application_name: "shippable-orcun"
+       env_name: "shippableorcun"
+       bucket_name: "elasticbeanstalk-eu-central-1-995079897031"
+       region: "eu-central-1"
+       image_name: "$DOCKER_HUB_URL/$REPO"
+       image_tag: "$BRANCH.$BUILD_NUMBER"
+
+    # # Quay.io
+    # - integrationName: "AWS - ttrahan"
+    #   type: aws
+    #   target: eb_docker
+    #   application_name: "shippable-demo-eb"
+    #   env_name: "eb-docker"
+    #   bucket_name: "elasticbeanstalk-us-east-1-288971733297"
+    #   region: "us-east-1"
+    #   image_name: "$QUAY_URL/$REPO"
+    #   image_tag: "$BRANCH.$BUILD_NUMBER"
 
   hub:
-    - integrationName: "ecr-test"
-      type: ecr
-    - integrationName: "docker-test"
+    #- integrationName: "Amazon ECR - ttrahan"
+    # type: ecr
+    - integrationName: "MyDockerHub"
       type: docker
+    # - integrationName: "Quay - ttrahan"
+    #   type: quay.io
